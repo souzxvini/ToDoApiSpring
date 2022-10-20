@@ -2,11 +2,14 @@ package souzxvini.com.ToDoAPI.service;
 
 import souzxvini.com.ToDoAPI.dto.TaskRequest;
 import souzxvini.com.ToDoAPI.dto.TaskResponse;
+import souzxvini.com.ToDoAPI.model.Status;
 import souzxvini.com.ToDoAPI.model.Task;
 import org.springframework.stereotype.Service;
+import souzxvini.com.ToDoAPI.model.User;
 import souzxvini.com.ToDoAPI.repository.TaskRepository;
 import souzxvini.com.ToDoAPI.repository.UserRepository;
 
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,34 +32,46 @@ public class TaskService {
 
         String userName = principal.getName();
 
-        List<Task> tasks = taskRepository.findByUserName(userName);
+        List<Task> tasks = taskRepository.findByUserEmail(userName);
 
         List<TaskResponse> response = new ArrayList<TaskResponse>();
 
         tasks.stream().forEach(game -> {
             response.add(TaskResponse.builder()
                     .id(game.getId())
-                    .descricao(game.getDescricao())
+                    .description(game.getDescription())
                     .status(game.getStatus())
+                    .deadline(game.getDeadline())
                     .build());
         });
         return response;
     }
 
-    public TaskResponse addTask(TaskRequest taskRequest) {
+    public TaskResponse addTask(TaskRequest taskRequest, Principal principal) throws Exception {
 
-        taskRepository.save(Task.builder()
-                .descricao(taskRequest.getDescricao())
-                .status(taskRequest.getStatus())
-                .deadline(taskRequest.getDeadline())
-                .user(taskRequest.getUser())
-                .build());
+        String username = principal.getName();
 
-        return TaskResponse.builder()
-                .descricao(taskRequest.getDescricao())
-                .status(taskRequest.getStatus())
-                .deadline(taskRequest.getDeadline())
-                .build();
+        Optional<User> optional = userRepository.findByEmail(username);
+
+        if(!(optional.isEmpty())){
+            User user = optional.get();
+
+            Task task = Task.builder()
+                    .description(taskRequest.getDescription())
+                    .status(Status.TO_DO)
+                    .deadline(taskRequest.getDeadline())
+                    .user(user)
+                    .build();
+
+            taskRepository.save(task);
+            return TaskResponse.builder()
+                    .id(task.getId())
+                    .description(taskRequest.getDescription())
+                    .status(Status.TO_DO)
+                    .deadline(taskRequest.getDeadline())
+                    .build();
+        }
+        throw new UserPrincipalNotFoundException("User not found");
     }
 
     public TaskResponse taskDetails(Long id) throws Exception {
@@ -64,12 +79,13 @@ public class TaskService {
 
         if(task.isPresent()){
             return TaskResponse.builder()
-                    .descricao(task.get().getDescricao())
+                    .id(task.get().getId())
+                    .description(task.get().getDescription())
                     .status(task.get().getStatus())
                     .deadline(task.get().getDeadline())
                     .build();
         }else {
-            throw new Exception("Esse game não existe");
+            throw new Exception("This game doesn't exists.\"");
         }
     }
 
@@ -85,23 +101,43 @@ public class TaskService {
     public TaskResponse updateTask(Long id, TaskRequest taskRequest) throws Exception {
         Optional<Task> optional = taskRepository.findById(id);
 
-        if(optional.isPresent()) {
+        if(!(optional.isEmpty())){
             taskRepository.save(Task.builder()
                     .id(id)
-                    .descricao(taskRequest.getDescricao())
+                    .description(taskRequest.getDescription())
                     .deadline(taskRequest.getDeadline())
-                    .status(taskRequest.getStatus())
-                    .user(taskRequest.getUser())
+                    .status(optional.get().getStatus())
+                    .user(optional.get().getUser())
                     .build());
 
             return TaskResponse.builder()
                     .id(id)
-                    .descricao(taskRequest.getDescricao())
+                    .description(taskRequest.getDescription())
                     .deadline(taskRequest.getDeadline())
-                    .status(taskRequest.getStatus())
+                    .status(optional.get().getStatus())
                     .build();
         }else{
-            throw new Exception("Esse game não existe");
+            throw new Exception("This task doesn't exists.");
+        }
+    }
+
+    public boolean isTaskStatusDone(Long id) throws Exception{
+        Optional<Task> optional = taskRepository.findById(id);
+        if(!(optional.isEmpty())){
+            Task task = optional.get();
+            if(task.getStatus().toString().equals("TO_DO") ||task.getStatus().toString() == "TO_DO" || task.getStatus() == Status.TO_DO ){
+                task.setStatus(Status.DONE);
+                taskRepository.save(task);
+                return true;
+            }
+            if(task.getStatus().toString().equals("DONE") ||task.getStatus().toString() == "DONE" ) {
+                task.setStatus(Status.TO_DO);
+                taskRepository.save(task);
+                return false;
+            }
+            return false;
+        } else {
+            throw new Exception("This task doesn't exists.");
         }
     }
 

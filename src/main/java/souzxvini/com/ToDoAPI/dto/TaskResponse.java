@@ -3,6 +3,7 @@ package souzxvini.com.ToDoAPI.dto;
 import lombok.*;
 import souzxvini.com.ToDoAPI.model.Status;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,10 +15,10 @@ public class TaskResponse {
 
     private Long id;
 
-    private String descricao;
+    private String description;
 
     private Status status;
 
-    private LocalDateTime deadline;
+    private LocalDate deadline;
 
 }

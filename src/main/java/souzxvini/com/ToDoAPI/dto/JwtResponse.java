@@ -1,15 +1,17 @@
 package souzxvini.com.ToDoAPI.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class JwtResponse{
 
-    private final String jwttoken;
+    private String jwttoken;
+    private String email;
 
-    public JwtResponse(String jwttoken) {
-        this.jwttoken = jwttoken;
-    }
 }

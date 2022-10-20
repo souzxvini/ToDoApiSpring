@@ -10,6 +10,6 @@ import java.util.UUID;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    List<Task> findByUserName(String name);
+    List<Task> findByUserEmail(String name);
 
 }

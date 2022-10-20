@@ -19,6 +19,7 @@ import souzxvini.com.ToDoAPI.dto.LoginForm;
 import souzxvini.com.ToDoAPI.dto.TokenDto;
 import souzxvini.com.ToDoAPI.security.JwtUtil;
 import souzxvini.com.ToDoAPI.security.UserDetailsServiceImpl;
+import souzxvini.com.ToDoAPI.service.AuthService;
 
 import javax.validation.Valid;
 
@@ -27,24 +28,11 @@ import javax.validation.Valid;
 public class AuthController {
 
     @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private AuthService authService;
 
     @PostMapping
-        public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginForm form) throws Exception {
-
-        UsernamePasswordAuthenticationToken dadosLogin = form.converter();
-
-        Authentication authentication = authenticationManager.authenticate(dadosLogin);
-
-        final String token = jwtUtil.gerarToken(authentication);
-
-        return ResponseEntity.ok(new JwtResponse(token));
+        public JwtResponse createAuthenticationToken(@RequestBody LoginForm form) throws Exception {
+        return authService.createAuthenticationToken(form);
     }
 
 }

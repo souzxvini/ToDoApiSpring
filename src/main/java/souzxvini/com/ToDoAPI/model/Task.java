@@ -3,7 +3,9 @@ package souzxvini.com.ToDoAPI.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Entity
@@ -18,12 +20,12 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String descricao;
+    private String description;
 
-    private LocalDateTime deadline;
+    private LocalDate deadline;
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.TO_DO;
+    private Status status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;

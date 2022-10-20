@@ -25,8 +25,8 @@ public class TaskController {
    }
 
    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public TaskResponse addTask(@RequestBody @Valid TaskRequest taskRequest){
-       return taskservice.addTask(taskRequest);
+    public TaskResponse addTask(@RequestBody @Valid TaskRequest taskRequest, Principal principal) throws Exception{
+       return taskservice.addTask(taskRequest, principal);
    }
 
    @DeleteMapping(value="/{id}")
@@ -44,6 +44,10 @@ public class TaskController {
        return taskservice.updateTask(id, taskRequest);
    }
 
+    @GetMapping(value = "isTaskStatusDone/{id}")
+    public boolean isTaskStatusDone(@PathVariable Long id) throws Exception {
+        return taskservice.isTaskStatusDone(id);
+    }
 
 
 }
