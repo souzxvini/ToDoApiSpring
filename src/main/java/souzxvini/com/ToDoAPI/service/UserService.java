@@ -4,7 +4,9 @@ import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.RequestParam;
 import souzxvini.com.ToDoAPI.dto.*;
+import souzxvini.com.ToDoAPI.model.EmailMessages;
 import souzxvini.com.ToDoAPI.model.Task;
 import souzxvini.com.ToDoAPI.model.User;
 import org.springframework.stereotype.Service;
@@ -12,15 +14,20 @@ import souzxvini.com.ToDoAPI.repository.UserRepository;
 
 import java.security.Principal;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
-    public UserService(UserRepository userRepository) {
+
+
+    public UserService(UserRepository userRepository, EmailService emailService) {
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     public void addUser(UserRequest userRequest) throws Exception {
@@ -114,6 +121,8 @@ public class UserService {
             throw new Exception("This user doesn't exists.");
         }
     }
+
+
 
 
 }
