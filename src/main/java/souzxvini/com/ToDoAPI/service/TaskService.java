@@ -85,7 +85,7 @@ public class TaskService {
                     .deadline(task.get().getDeadline())
                     .build();
         }else {
-            throw new Exception("This game doesn't exists.\"");
+            throw new Exception("This game doesn't exists.");
         }
     }
 

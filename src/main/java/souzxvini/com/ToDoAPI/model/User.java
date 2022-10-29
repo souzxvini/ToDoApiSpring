@@ -34,11 +34,15 @@ public class User implements UserDetails, Serializable {
     @Column(nullable = false)
     private String name;
 
-    //private List<Role> roles;
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "USERS_ROLES",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Collection<Role> roles;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return this.roles;
     }
 
     @Override

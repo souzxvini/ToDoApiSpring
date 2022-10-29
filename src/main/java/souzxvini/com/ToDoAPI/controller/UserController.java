@@ -3,12 +3,18 @@ package souzxvini.com.ToDoAPI.controller;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import souzxvini.com.ToDoAPI.dto.LoginForm;
+import souzxvini.com.ToDoAPI.dto.UserChangeDataRequest;
 import souzxvini.com.ToDoAPI.dto.UserRequest;
 import souzxvini.com.ToDoAPI.dto.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import souzxvini.com.ToDoAPI.model.User;
 import souzxvini.com.ToDoAPI.service.UserService;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping(value = "user")
@@ -24,5 +30,21 @@ public class UserController {
 
        return new ResponseEntity<>(HttpStatus.CREATED);
    }
+
+   @GetMapping(value = "/{id}")
+    public UserResponse getUserDetails(@PathVariable Long id) throws Exception {
+        return userService.getUserDetails(id);
+   }
+
+
+   @PutMapping(value = "updateUserData/{id}")
+   public UserResponse updtateUserData(@PathVariable Long id, @RequestBody UserChangeDataRequest userChangeDataRequest) throws Exception {
+       return userService.updtateUserData(id, userChangeDataRequest);
+   }
+
+
+
+
+
 
 }

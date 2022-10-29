@@ -10,18 +10,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import souzxvini.com.ToDoAPI.dto.JwtResponse;
 import souzxvini.com.ToDoAPI.dto.LoginForm;
 import souzxvini.com.ToDoAPI.dto.TokenDto;
 import souzxvini.com.ToDoAPI.security.JwtUtil;
 import souzxvini.com.ToDoAPI.security.UserDetailsServiceImpl;
 import souzxvini.com.ToDoAPI.service.AuthService;
+import souzxvini.com.ToDoAPI.service.UserService;
 
 import javax.validation.Valid;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/auth")
@@ -30,9 +29,15 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+
     @PostMapping
         public JwtResponse createAuthenticationToken(@RequestBody LoginForm form) throws Exception {
         return authService.createAuthenticationToken(form);
     }
+    @GetMapping(value = "confirmAuthenticatedUserData")
+    public boolean confirmAuthenticatedUserData(@RequestBody LoginForm loginForm, Principal principal) throws Exception {
+        return authService.confirmAuthenticatedUserData(loginForm, principal);
+    }
+
 
 }
