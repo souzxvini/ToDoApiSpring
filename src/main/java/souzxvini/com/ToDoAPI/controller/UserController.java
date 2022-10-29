@@ -4,10 +4,7 @@ import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import souzxvini.com.ToDoAPI.dto.LoginForm;
-import souzxvini.com.ToDoAPI.dto.UserChangeDataRequest;
-import souzxvini.com.ToDoAPI.dto.UserRequest;
-import souzxvini.com.ToDoAPI.dto.UserResponse;
+import souzxvini.com.ToDoAPI.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -39,8 +36,14 @@ public class UserController {
 
    @PutMapping(value = "updateUserData/{id}")
    public UserResponse updtateUserData(@PathVariable Long id, @RequestBody UserChangeDataRequest userChangeDataRequest) throws Exception {
-       return userService.updtateUserData(id, userChangeDataRequest);
+       return userService.updateUserData(id, userChangeDataRequest);
    }
+
+    @PutMapping(value = "updateUserPassword")
+    public ResponseEntity updtateUserPassword(@RequestParam String email, @RequestBody UserChangePasswordRequest changePasswordRequest) throws Exception {
+        return userService.updateUserPassword(email, changePasswordRequest);
+    }
+
 
 
 

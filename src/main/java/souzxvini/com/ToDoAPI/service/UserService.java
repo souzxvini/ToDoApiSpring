@@ -55,7 +55,7 @@ public class UserService {
         }
         throw new Exception("User not found.");
     }
-    public UserResponse updtateUserData(Long id, UserChangeDataRequest userChangeDataRequest) throws Exception {
+    public UserResponse updateUserData(Long id, UserChangeDataRequest userChangeDataRequest) throws Exception {
         Optional<User> optional = userRepository.findById(id);
 
         if(!(optional.isEmpty())){
@@ -67,14 +67,12 @@ public class UserService {
                     .password(optional.get().getPassword())
                     .roles(optional.get().getRoles())
                     .build();
-            System.out.println("ewcqwerv" + user);
+
             if(user.getRoles().isEmpty()){
                 throw new Exception("You don't have access to do this.");
             } else{
                 user.getRoles().removeAll(user.getRoles());
-                System.out.println("c3ervgb4rtbn5tyn5tynt");
             }
-            System.out.println(user);
             userRepository.save(user);
 
             return UserResponse.builder()
@@ -86,5 +84,36 @@ public class UserService {
             throw new Exception("This user doesn't exists.");
         }
     }
+    public ResponseEntity updateUserPassword(String email, UserChangePasswordRequest userChangePasswordRequest) throws Exception {
+        Optional<User> optional = userRepository.findByEmail(email);
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String unencryptedPassword = userChangePasswordRequest.getPassword();
+
+        String encodedPassword = encoder.encode(unencryptedPassword);
+
+        if(!(optional.isEmpty())){
+
+            User user = User.builder()
+                    .id(optional.get().getId())
+                    .email(optional.get().getEmail())
+                    .name(optional.get().getName())
+                    .password(encodedPassword)
+                    .roles(optional.get().getRoles())
+                    .build();
+
+            if(user.getRoles().isEmpty()){
+                throw new Exception("You don't have access to do this.");
+            } else{
+                user.getRoles().removeAll(user.getRoles());
+            }
+            userRepository.save(user);
+
+            return ResponseEntity.ok().build();
+        }else{
+            throw new Exception("This user doesn't exists.");
+        }
+    }
+
 
 }
