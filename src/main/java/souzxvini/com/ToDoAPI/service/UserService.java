@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import souzxvini.com.ToDoAPI.repository.UserRepository;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -133,18 +134,51 @@ public class UserService {
 
             user.setPassword(encodedPassword);
 
-            if(changeForgotPasswordRequest.getRandomCode().equals(user.getRandomCode()) || changeForgotPasswordRequest.getRandomCode() == user.getRandomCode()){
-                user.setRandomCode(null);
+            if(!changeForgotPasswordRequest.getPassword().isEmpty()){
+                if(changeForgotPasswordRequest.getRandomCode().equals(user.getRandomCode()) || changeForgotPasswordRequest.getRandomCode() == user.getRandomCode()){
+                    user.setRandomCode(null);
 
-                userRepository.save(user);
+                    userRepository.save(user);
 
-                return ResponseEntity.ok().build();
-            } else{
-                throw new Exception("Wrong code!");
+                    return ResponseEntity.ok().build();
+                } else{
+                    throw new Exception("Wrong code!");
+                }
+            }else{
+                throw new Exception("The code can't be empty!");
             }
+
         }else{
             throw new Exception("This user doesn't exists.");
         }
+    }
+
+    public ResponseEntity clearUserRandomCodeAndRole() throws Exception {
+
+        List<User> usuarios = userRepository.findAll();
+
+        usuarios.stream().forEach(user -> {
+
+            if(!user.getRandomCode().isEmpty()){
+                user.setRandomCode(null);
+            }
+
+            if(!user.getRoles().isEmpty()){
+                user.getRoles().removeAll(user.getRoles());
+            }
+
+            userRepository.save(User.builder()
+                    .id(user.getId())
+                    .email(user.getEmail())
+                    .password(user.getPassword())
+                    .name(user.getName())
+                    .randomCode(user.getRandomCode())
+                    .roles(user.getRoles())
+                    .build());
+        });
+
+        return ResponseEntity.ok().build();
+
     }
 
 

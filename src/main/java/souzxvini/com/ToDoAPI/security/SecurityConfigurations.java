@@ -46,6 +46,7 @@ public class SecurityConfigurations {
                 .antMatchers( "/auth").permitAll()
                 .antMatchers( "/auth/sendEmailCode").permitAll()
                 .antMatchers( "/user/updateForgotPassword").permitAll()
+                .antMatchers( "/user/clearUserRandomCodeAndRole").permitAll()
                 .antMatchers( "/user/updateLoggedUserPassword").hasAuthority("ROLE_EDITOR")
                 .anyRequest().authenticated()
                 .and()

@@ -48,4 +48,9 @@ public class UserController {
         return userService.updateForgotPassword( changeForgotPasswordRequest);
     }
 
+    @PutMapping(value = "/clearUserRandomCodeAndRole")
+    public ResponseEntity clearUserRandomCodeAndRole() throws Exception {
+        return userService.clearUserRandomCodeAndRole();
+    }
+
 }
