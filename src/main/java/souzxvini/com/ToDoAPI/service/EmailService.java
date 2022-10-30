@@ -12,6 +12,7 @@ import souzxvini.com.ToDoAPI.dto.UserChangePasswordRequest;
 import souzxvini.com.ToDoAPI.dto.UserRequest;
 import souzxvini.com.ToDoAPI.dto.UserResponse;
 import souzxvini.com.ToDoAPI.model.EmailMessages;
+import souzxvini.com.ToDoAPI.model.Role;
 import souzxvini.com.ToDoAPI.model.User;
 import souzxvini.com.ToDoAPI.repository.UserRepository;
 
@@ -41,25 +42,5 @@ public class EmailService {
 
     String randomCode = "";
 
-    public void sendEmailToUser(@RequestParam String email) throws Exception {
-
-        Optional<User> optional = userRepository.findByEmail(email);
-
-        if(!(optional.isEmpty())){
-            User user = optional.get();
-
-            Random rnd = new Random();
-            int number = rnd.nextInt(999999);
-
-            // this will convert any number sequence into 6 character.
-            randomCode =  String.format("%06d", number);
-
-            sendEmail(email, EmailMessages.createTittle(user), EmailMessages.messageToUser(user, randomCode));
-        } else{
-            throw new Exception("There's no user registered with this email.");
-        }
-
-
-    }
 
 }

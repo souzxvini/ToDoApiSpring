@@ -14,15 +14,7 @@ import java.security.Principal;
 @RequestMapping("/email")
 public class EmailController {
 
-    @Autowired
-    private AuthService authService;
-    @Autowired
-    private EmailService emailService;
 
-    @GetMapping
-    public void confirmAuthenticatedUserData(@RequestParam String email) throws Exception {
-        emailService.sendEmailToUser(email);
-    }
 
 
 }

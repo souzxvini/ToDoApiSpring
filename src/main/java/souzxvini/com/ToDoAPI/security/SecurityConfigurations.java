@@ -3,6 +3,7 @@ package souzxvini.com.ToDoAPI.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -43,7 +44,9 @@ public class SecurityConfigurations {
                 .and()
                 .authorizeRequests()
                 .antMatchers( "/auth").permitAll()
-                .antMatchers( "/user").permitAll()
+                .antMatchers( "/auth/sendEmailCode").permitAll()
+                .antMatchers( "/user/updateForgotPassword").permitAll()
+                .antMatchers( "/user/updateLoggedUserPassword").hasAuthority("ROLE_EDITOR")
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore( new JwtFilter(jwtUtil, userDetailsService),

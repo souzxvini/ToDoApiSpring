@@ -40,9 +40,12 @@ public class User implements UserDetails, Serializable {
         inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Collection<Role> roles;
 
+    @Column(unique = true)
+    private String randomCode;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles;
+        return roles;
     }
 
     @Override

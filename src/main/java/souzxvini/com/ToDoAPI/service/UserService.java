@@ -23,8 +23,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final EmailService emailService;
 
-
-
     public UserService(UserRepository userRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.emailService = emailService;
@@ -122,7 +120,32 @@ public class UserService {
         }
     }
 
+    public ResponseEntity updateForgotPassword( ChangeForgotPasswordRequest changeForgotPasswordRequest) throws Exception {
+        Optional<User> optional = userRepository.findByEmail(changeForgotPasswordRequest.getEmail());
 
+        if(!(optional.isEmpty())){
+            User user = optional.get();
+
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+            String unencryptedPassword = changeForgotPasswordRequest.getPassword();
+
+            String encodedPassword = encoder.encode(unencryptedPassword);
+
+            user.setPassword(encodedPassword);
+
+            if(changeForgotPasswordRequest.getRandomCode().equals(user.getRandomCode()) || changeForgotPasswordRequest.getRandomCode() == user.getRandomCode()){
+                user.setRandomCode(null);
+
+                userRepository.save(user);
+
+                return ResponseEntity.ok().build();
+            } else{
+                throw new Exception("Wrong code!");
+            }
+        }else{
+            throw new Exception("This user doesn't exists.");
+        }
+    }
 
 
 }

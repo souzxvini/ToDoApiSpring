@@ -33,21 +33,19 @@ public class UserController {
         return userService.getUserDetails(id);
    }
 
-
    @PutMapping(value = "updateUserData/{id}")
    public UserResponse updtateUserData(@PathVariable Long id, @RequestBody UserChangeDataRequest userChangeDataRequest) throws Exception {
        return userService.updateUserData(id, userChangeDataRequest);
    }
 
-    @PutMapping(value = "updateUserPassword")
+    @PutMapping(value = "updateLoggedUserPassword")
     public ResponseEntity updtateUserPassword(@RequestParam String email, @RequestBody UserChangePasswordRequest changePasswordRequest) throws Exception {
         return userService.updateUserPassword(email, changePasswordRequest);
     }
 
-
-
-
-
-
+    @PutMapping(value = "/updateForgotPassword")
+    public ResponseEntity updateForgotPassword( @RequestBody ChangeForgotPasswordRequest changeForgotPasswordRequest) throws Exception {
+        return userService.updateForgotPassword( changeForgotPasswordRequest);
+    }
 
 }

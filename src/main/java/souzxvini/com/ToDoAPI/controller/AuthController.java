@@ -11,12 +11,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import souzxvini.com.ToDoAPI.dto.JwtResponse;
-import souzxvini.com.ToDoAPI.dto.LoginForm;
-import souzxvini.com.ToDoAPI.dto.TokenDto;
+import souzxvini.com.ToDoAPI.dto.*;
 import souzxvini.com.ToDoAPI.security.JwtUtil;
 import souzxvini.com.ToDoAPI.security.UserDetailsServiceImpl;
 import souzxvini.com.ToDoAPI.service.AuthService;
+import souzxvini.com.ToDoAPI.service.EmailService;
 import souzxvini.com.ToDoAPI.service.UserService;
 
 import javax.validation.Valid;
@@ -29,6 +28,8 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping
         public JwtResponse createAuthenticationToken(@RequestBody LoginForm form) throws Exception {
@@ -39,5 +40,8 @@ public class AuthController {
         return authService.confirmAuthenticatedUserData(loginForm, principal);
     }
 
-
+    @GetMapping(value= "sendEmailCode")
+    public void confirmAuthenticatedUserData(@RequestParam String email) throws Exception {
+        authService.sendEmailToUser(email);
+    }
 }
