@@ -8,6 +8,6 @@ public class EmailMessages {
 
     public static String messageToUser(User user, String code){
         return "Hi " + user.getName() +
-                ", your verification code is: " + code;
+                ", your 6 digit confirmation code is: " + code;
     }
 }

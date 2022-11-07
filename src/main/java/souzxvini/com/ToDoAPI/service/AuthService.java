@@ -41,15 +41,25 @@ public class AuthService {
     @Autowired
     private EmailService emailService;
 
-    public JwtResponse createAuthenticationToken(LoginForm form) {
+    public JwtResponse createAuthenticationToken(LoginForm form) throws Exception {
 
         UsernamePasswordAuthenticationToken dadosLogin = form.converter();
 
         Authentication authentication = authenticationManager.authenticate(dadosLogin);
 
-        final String token = jwtUtil.gerarToken(authentication);
+        Optional<User> optional = userRepository.findByEmail(form.getEmail());
 
-        return new JwtResponse(token, form.getEmail());
+        if(!optional.isEmpty()){
+            User user = optional.get();
+
+            final String token = jwtUtil.gerarToken(authentication);
+
+            return new JwtResponse(token, form.getEmail(), user.getName());
+        }else{
+            throw new Exception("User doesn't exists");
+        }
+
+
     }
 
     public boolean confirmAuthenticatedUserData(LoginForm loginForm, Principal principal){

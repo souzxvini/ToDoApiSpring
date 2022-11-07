@@ -10,10 +10,10 @@ import souzxvini.com.ToDoAPI.service.TaskService;
 import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
-@RequestMapping(value = "task")
+@RequestMapping(value = "/task")
+@CrossOrigin(origins = "http://localhost:4200")
 public class TaskController {
 
     @Autowired

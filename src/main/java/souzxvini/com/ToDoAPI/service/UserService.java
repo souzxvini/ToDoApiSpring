@@ -180,6 +180,16 @@ public class UserService {
         return ResponseEntity.ok().build();
 
     }
+    public boolean verifyIfUserExists(String nome){
+        Optional<User> optional = userRepository.findByEmail(nome);
+
+        if(optional.isEmpty() ){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 
 
 }

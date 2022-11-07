@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import souzxvini.com.ToDoAPI.repository.UserRepository;
 
 @EnableWebSecurity
@@ -45,6 +46,8 @@ public class SecurityConfigurations {
                 .authorizeRequests()
                 .antMatchers( "/auth").permitAll()
                 .antMatchers( "/auth/sendEmailCode").permitAll()
+                .antMatchers(  "/user/register").permitAll()
+                .antMatchers(  "/user/exists").permitAll()
                 .antMatchers( "/user/updateForgotPassword").permitAll()
                 .antMatchers( "/user/clearUserRandomCodeAndRole").permitAll()
                 .antMatchers( "/user/updateLoggedUserPassword").hasAuthority("ROLE_EDITOR")
