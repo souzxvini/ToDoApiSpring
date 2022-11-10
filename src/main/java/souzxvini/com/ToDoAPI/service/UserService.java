@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class UserService {
@@ -129,21 +131,35 @@ public class UserService {
 
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             String unencryptedPassword = changeForgotPasswordRequest.getPassword();
-
             String encodedPassword = encoder.encode(unencryptedPassword);
-
             user.setPassword(encodedPassword);
 
             if(!changeForgotPasswordRequest.getPassword().isEmpty()){
-                if(changeForgotPasswordRequest.getRandomCode().equals(user.getRandomCode()) || changeForgotPasswordRequest.getRandomCode() == user.getRandomCode()){
-                    user.setRandomCode(null);
+                if(changeForgotPasswordRequest.getPassword().equals(changeForgotPasswordRequest.getConfirmPassword())){
 
-                    userRepository.save(user);
+                    String regex_pattern =
+                            "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{6,24}$";
 
-                    return ResponseEntity.ok().build();
+                    Pattern pattern = Pattern.compile(regex_pattern);
+                    Matcher matcher = pattern.matcher(changeForgotPasswordRequest.getPassword());
+
+                    if(matcher.matches()){
+                        if(changeForgotPasswordRequest.getRandomCode().equals(user.getRandomCode()) || changeForgotPasswordRequest.getRandomCode() == user.getRandomCode()){
+                            user.setRandomCode(null);
+                            userRepository.save(user);
+
+                            return ResponseEntity.ok().build();
+                        } else{
+                            throw new Exception("Wrong code!");
+                        }
+                    } else{
+                        throw new Exception("Password does NOT have all the requirements");
+                    }
+
                 } else{
-                    throw new Exception("Wrong code!");
+                    throw new Exception("Passwords do NOT matches.");
                 }
+
             }else{
                 throw new Exception("The code can't be empty!");
             }

@@ -18,6 +18,9 @@ public class ChangeForgotPasswordRequest {
     private String password;
 
     @NotBlank
+    private String confirmPassword;
+
+    @NotBlank
     private String randomCode;
 
 }
