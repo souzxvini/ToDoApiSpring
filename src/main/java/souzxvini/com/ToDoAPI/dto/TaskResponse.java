@@ -19,6 +19,4 @@ public class TaskResponse {
 
     private Status status;
 
-    private LocalDate deadline;
-
 }

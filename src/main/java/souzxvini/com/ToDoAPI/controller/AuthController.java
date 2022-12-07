@@ -23,7 +23,7 @@ public class AuthController {
         public JwtResponse createAuthenticationToken(@RequestBody LoginForm form) throws Exception {
         return authService.createAuthenticationToken(form);
     }
-    @GetMapping(value = "confirmAuthenticatedUserData")
+    @PostMapping(value = "confirmAuthenticatedUserData")
     public boolean confirmAuthenticatedUserData(@RequestBody LoginForm loginForm, Principal principal) throws Exception {
         return authService.confirmAuthenticatedUserData(loginForm, principal);
     }

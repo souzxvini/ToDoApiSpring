@@ -29,9 +29,9 @@ public class UserController {
         return userService.getUserDetails(id);
    }
 
-   @PutMapping(value = "updateUserData/{id}")
-   public UserResponse updtateUserData(@PathVariable Long id, @RequestBody UserChangeDataRequest userChangeDataRequest) throws Exception {
-       return userService.updateUserData(id, userChangeDataRequest);
+   @PutMapping(value = "updateUserData")
+   public UserResponse updtateUserData(@RequestParam String email, @RequestBody UserChangeDataRequest userChangeDataRequest) throws Exception {
+       return userService.updateUserData(email, userChangeDataRequest);
    }
 
     @PutMapping(value = "updateLoggedUserPassword")
@@ -45,14 +45,18 @@ public class UserController {
     }
 
     @PutMapping(value = "/clearUserRandomCodeAndRole")
-    public ResponseEntity clearUserRandomCodeAndRole() throws Exception {
-        return userService.clearUserRandomCodeAndRole();
+    public ResponseEntity clearUserRandomCodeAndRole(@RequestParam String email) throws Exception {
+        return userService.clearUserRandomCodeAndRole(email);
     }
 
     @GetMapping(value = "/exists", produces = MediaType.APPLICATION_JSON_VALUE )
     public boolean verifyIfUserExists(@RequestParam String email){
-
         return userService.verifyIfUserExists(email);
+    }
+
+    @GetMapping(value = "/userHasAuthorities", produces = MediaType.APPLICATION_JSON_VALUE )
+    public boolean userHasAuthorities(@RequestParam String email) throws Exception {
+        return userService.userHasAuthorities(email);
     }
 
 }

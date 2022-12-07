@@ -1,5 +1,8 @@
 package souzxvini.com.ToDoAPI.controller;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import souzxvini.com.ToDoAPI.dto.TaskRequest;
 import souzxvini.com.ToDoAPI.dto.TaskResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,18 @@ public class TaskController {
    public List<TaskResponse> showTasks(Principal principal){
        return taskservice.showTasks(principal);
    }
+
+    @GetMapping(value = "/todo")
+    public List<TaskResponse> showToDoTasks(@PageableDefault(sort = "id", direction = Sort.Direction.DESC, size = Integer.MAX_VALUE) Pageable pageable,
+                                            Principal principal){
+        return taskservice.showToDoTasks(principal, pageable);
+    }
+
+    @GetMapping(value = "/done")
+    public List<TaskResponse> showDoneTasks(@PageableDefault(sort = "id",direction = Sort.Direction.DESC,size = Integer.MAX_VALUE) Pageable pageable,
+                                            Principal principal){
+        return taskservice.showDoneTasks(principal, pageable);
+    }
 
    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public TaskResponse addTask(@RequestBody @Valid TaskRequest taskRequest, Principal principal) throws Exception{
@@ -48,8 +63,4 @@ public class TaskController {
     public boolean isTaskStatusDone(@PathVariable Long id) throws Exception {
         return taskservice.isTaskStatusDone(id);
     }
-
-
-
-
 }

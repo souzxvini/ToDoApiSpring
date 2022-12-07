@@ -14,4 +14,7 @@ public class UserChangePasswordRequest {
     @NotBlank
     private String password;
 
+    @NotBlank
+    private String confirmPassword;
+
 }

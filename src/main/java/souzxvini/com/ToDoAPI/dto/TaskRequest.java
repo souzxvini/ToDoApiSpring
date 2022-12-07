@@ -14,5 +14,4 @@ public class TaskRequest {
     @NotBlank
     private String description;
 
-    private LocalDate deadline;
 }
