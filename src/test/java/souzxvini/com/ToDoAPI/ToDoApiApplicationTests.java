@@ -1,4 +1,4 @@
-package souzxvini.com.ToDoAPI;
+/*package souzxvini.com.ToDoAPI;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,4 +10,4 @@ class ToDoApiApplicationTests {
 	void contextLoads() {
 	}
 
-}
+}*/
