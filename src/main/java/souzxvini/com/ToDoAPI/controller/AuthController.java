@@ -10,7 +10,7 @@ import java.security.Principal;
 
 @RestController
 @RequestMapping(value = "/auth")
-@CrossOrigin(origins = "https://todosouzxvini.web.app")
+@CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
 
     @Autowired

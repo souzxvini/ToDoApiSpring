@@ -10,7 +10,7 @@ import souzxvini.com.ToDoAPI.service.UserService;
 
 @RestController
 @RequestMapping(value = "/user")
-@CrossOrigin(origins = "https://todosouzxvini.web.app")
+@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
 
     @Autowired

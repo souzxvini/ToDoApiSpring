@@ -1,6 +1,7 @@
 package souzxvini.com.ToDoAPI.service;
 
 import org.springframework.data.domain.Pageable;
+import souzxvini.com.ToDoAPI.dto.ProgressResponse;
 import souzxvini.com.ToDoAPI.dto.TaskRequest;
 import souzxvini.com.ToDoAPI.dto.TaskResponse;
 import souzxvini.com.ToDoAPI.model.Status;
@@ -74,12 +75,12 @@ public class TaskService {
 
         List<TaskResponse> response = new ArrayList<TaskResponse>();
 
-        tasks.stream().forEach(game -> {
-            if(game.getStatus().getName() == "DONE"){
+        tasks.stream().forEach(task -> {
+            if(task.getStatus().getName() == "DONE"){
                 response.add(TaskResponse.builder()
-                        .id(game.getId())
-                        .description(game.getDescription())
-                        .status(game.getStatus())
+                        .id(task.getId())
+                        .description(task.getDescription())
+                        .status(task.getStatus())
                         .build());
             }
         });
@@ -176,5 +177,33 @@ public class TaskService {
         }
     }
 
+    public ProgressResponse getProgress(Principal principal) {
 
+        String username = principal.getName();
+
+        List<Task> allTasks = this.taskRepository.findByUserEmail(username);
+
+        List<Task> doneTasks = new ArrayList<Task>();
+
+        allTasks.stream().forEach(task -> {
+            if(task.getStatus().getName() == "DONE"){
+                doneTasks.add(Task.builder()
+                        .id(task.getId())
+                        .description(task.getDescription())
+                        .status(task.getStatus())
+                        .build());
+            }
+        });
+        System.out.println(allTasks.size());
+        System.out.println(doneTasks.size());
+
+        Double done = Double.valueOf(doneTasks.size());
+        Double all = Double.valueOf(allTasks.size());
+        Double percent = Double.valueOf(100);
+        double progress = ((done / all) * percent);
+
+        return ProgressResponse.builder()
+                .progress(progress).build();
+
+    }
 }

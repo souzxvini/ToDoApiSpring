@@ -3,6 +3,7 @@ package souzxvini.com.ToDoAPI.controller;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import souzxvini.com.ToDoAPI.dto.ProgressResponse;
 import souzxvini.com.ToDoAPI.dto.TaskRequest;
 import souzxvini.com.ToDoAPI.dto.TaskResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/task")
-@CrossOrigin(origins = "https://todosouzxvini.web.app")
+@CrossOrigin(origins = "http://localhost:4200")
 public class TaskController {
 
     @Autowired
@@ -62,5 +63,10 @@ public class TaskController {
     @GetMapping(value = "isTaskStatusDone/{id}")
     public boolean isTaskStatusDone(@PathVariable Long id) throws Exception {
         return taskservice.isTaskStatusDone(id);
+    }
+
+    @GetMapping(value = "getProgress")
+    public ProgressResponse getProgress(Principal principal) throws Exception {
+        return taskservice.getProgress(principal);
     }
 }
