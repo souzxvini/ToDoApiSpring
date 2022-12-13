@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/task")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "https://todoappsouzxvini.web.app")
 public class TaskController {
 
     @Autowired
