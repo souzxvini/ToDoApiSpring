@@ -1,11 +1,9 @@
 package souzxvini.com.ToDoAPI.model;
 
-public enum Status {
-    TO_DO ("TO DO"),
-    DONE ("DONE"),
-    NOT_STARTED ("NOT STARTED"),
-
-    EXPIRED ("EXPIRED");
+public enum Priority {
+    HIGH ("1"),
+    MEDIUM ("2"),
+    LOW ("3");
 
     public String getName() {
         return name;
@@ -13,7 +11,7 @@ public enum Status {
 
     private final String name;
 
-    Status(String name){
+    Priority(String name){
         this.name = name;
     }
 }

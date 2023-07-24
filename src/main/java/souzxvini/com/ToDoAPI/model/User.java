@@ -23,7 +23,7 @@ public class User implements UserDetails, Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -42,6 +42,12 @@ public class User implements UserDetails, Serializable {
 
     @Column(unique = true)
     private String randomCode;
+
+    @Column(nullable = false)
+    private String language;
+
+    @Column(nullable = false)
+    private String theme;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

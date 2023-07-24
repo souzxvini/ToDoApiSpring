@@ -1,209 +1,356 @@
 package souzxvini.com.ToDoAPI.service;
 
-import org.springframework.data.domain.Pageable;
-import souzxvini.com.ToDoAPI.dto.ProgressResponse;
+import org.springframework.stereotype.Service;
 import souzxvini.com.ToDoAPI.dto.TaskRequest;
 import souzxvini.com.ToDoAPI.dto.TaskResponse;
+import souzxvini.com.ToDoAPI.dto.TasksFilterRequest;
+import souzxvini.com.ToDoAPI.dto.UpdateTaskRequest;
+import souzxvini.com.ToDoAPI.model.Activity;
+import souzxvini.com.ToDoAPI.model.Category;
+import souzxvini.com.ToDoAPI.model.ConclusionStatus;
+import souzxvini.com.ToDoAPI.model.Priority;
 import souzxvini.com.ToDoAPI.model.Status;
 import souzxvini.com.ToDoAPI.model.Task;
-import org.springframework.stereotype.Service;
 import souzxvini.com.ToDoAPI.model.User;
+import souzxvini.com.ToDoAPI.repository.ActivityRepository;
+import souzxvini.com.ToDoAPI.repository.CategoryRepository;
 import souzxvini.com.ToDoAPI.repository.TaskRepository;
 import souzxvini.com.ToDoAPI.repository.UserRepository;
+import souzxvini.com.ToDoAPI.util.DateUtil;
 
 import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.security.Principal;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class TaskService {
 
     private final TaskRepository taskRepository;
 
+    private final CategoryRepository categoryRepository;
+
     private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
+    private final ActivityRepository activityRepository;
+
+    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository, UserRepository userRepository, ActivityRepository activityRepository) {
         this.taskRepository = taskRepository;
+        this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
+        this.activityRepository = activityRepository;
     }
-
-    public List<TaskResponse> showTasks(Principal principal) {
-
-        String userName = principal.getName();
-
-        List<Task> tasks = taskRepository.findByUserEmail(userName);
-
-        List<TaskResponse> response = new ArrayList<TaskResponse>();
-
-        tasks.stream().forEach(game -> {
-            response.add(TaskResponse.builder()
-                    .id(game.getId())
-                    .description(game.getDescription())
-                    .status(game.getStatus())
-                    .build());
-        });
-        return response;
-    }
-
-    public List<TaskResponse> showToDoTasks(Principal principal, Pageable pageable) {
-
-        String userName = principal.getName();
-
-        List<Task> tasks = taskRepository.findByUserEmail(userName, pageable);
-
-        List<TaskResponse> response = new ArrayList<TaskResponse>();
-
-        tasks.stream().forEach(game -> {
-            if(game.getStatus().getName() == "TO DO"){
-                response.add(TaskResponse.builder()
-                        .id(game.getId())
-                        .description(game.getDescription())
-                        .status(game.getStatus())
-                        .build());
-            }
-        });
-        return response;
-    }
-    public List<TaskResponse> showDoneTasks(Principal principal, Pageable pageable) {
-
-        String userName = principal.getName();
-
-        List<Task> tasks = taskRepository.findByUserEmail(userName, pageable);
-
-        List<TaskResponse> response = new ArrayList<TaskResponse>();
-
-        tasks.stream().forEach(task -> {
-            if(task.getStatus().getName() == "DONE"){
-                response.add(TaskResponse.builder()
-                        .id(task.getId())
-                        .description(task.getDescription())
-                        .status(task.getStatus())
-                        .build());
-            }
-        });
-        return response;
-    }
-
 
     public TaskResponse addTask(TaskRequest taskRequest, Principal principal) throws Exception {
 
-        String username = principal.getName();
+        Optional<Category> optional = categoryRepository.findByUserEmailAndId(principal.getName(), taskRequest.getCategoryId());
 
-        Optional<User> optional = userRepository.findByEmail(username);
+        if (!optional.isEmpty()) {
 
-        if(!(optional.isEmpty())){
-            User user = optional.get();
+            Category category = optional.get();
 
-            Task task = Task.builder()
-                    .description(taskRequest.getDescription())
-                    .status(Status.TO_DO)
-                    .user(user)
-                    .build();
+            LocalDate initialDate = null;
+            LocalDate deadline = null;
 
-            taskRepository.save(task);
-            return TaskResponse.builder()
-                    .id(task.getId())
-                    .description(taskRequest.getDescription())
-                    .status(Status.TO_DO)
-                    .build();
+            if (taskRequest.getInitialDate() != null) {
+                initialDate = DateUtil.toLocalDate(taskRequest.getInitialDate(), "dd-MM-yyyy");
+            }
+            if (taskRequest.getDeadline() != null) {
+                deadline = DateUtil.toLocalDate(taskRequest.getDeadline(), "dd-MM-yyyy");
+            }
+
+            if (initialDate == null && deadline == null) {
+                Task task = rowMapperTask(taskRequest, Status.TO_DO, initialDate, deadline, category);
+                taskRepository.save(task);
+
+                category.getTasks().add(task);
+                categoryRepository.save(category);
+
+                return rowMapperTaskResponse(task, taskRequest, initialDate, deadline);
+            }
+
+            if (taskRequest.getInitialDate() != null && taskRequest.getDeadline() != null) {
+                // verifica se a data de inicio é maior que a atual
+                if (initialDate.isAfter(LocalDate.now())) {
+                    Task task = rowMapperTask(taskRequest, Status.NOT_STARTED, initialDate, deadline, category);
+                    taskRepository.save(task);
+
+                    category.getTasks().add(task);
+                    categoryRepository.save(category);
+
+                    return rowMapperTaskResponse(task, taskRequest, initialDate, deadline);
+                } else {
+                    // verifica se a data final é maior ou igual a data atual, se não for, quer dizer que ja passou
+                    if (deadline.isAfter(LocalDate.now()) || deadline.isEqual(LocalDate.now())) {
+                        Task task = rowMapperTask(taskRequest, Status.TO_DO, initialDate, deadline, category);
+                        taskRepository.save(task);
+
+                        category.getTasks().add(task);
+                        categoryRepository.save(category);
+
+                        return rowMapperTaskResponse(task, taskRequest, initialDate, deadline);
+                    } else {
+                        Task task = rowMapperTask(taskRequest, Status.EXPIRED, initialDate, deadline, category);
+                        taskRepository.save(task);
+
+                        category.getTasks().add(task);
+                        categoryRepository.save(category);
+
+                        return rowMapperTaskResponse(task, taskRequest, initialDate, deadline);
+                    }
+                }
+            }
+
+            if (initialDate != null && deadline == null) {
+                if (initialDate.isAfter(LocalDate.now())) {
+                    Task task = rowMapperTask(taskRequest, Status.NOT_STARTED, initialDate, deadline, category);
+                    taskRepository.save(task);
+
+                    category.getTasks().add(task);
+                    categoryRepository.save(category);
+
+                    return rowMapperTaskResponse(task, taskRequest, initialDate, deadline);
+                } else {
+                    Task task = rowMapperTask(taskRequest, Status.TO_DO, initialDate, deadline, category);
+                    taskRepository.save(task);
+
+                    category.getTasks().add(task);
+                    categoryRepository.save(category);
+
+                    return rowMapperTaskResponse(task, taskRequest, initialDate, deadline);
+                }
+            }
+
+            if (initialDate == null && deadline != null) {
+                if (deadline.isBefore(LocalDate.now())) {
+                    Task task = rowMapperTask(taskRequest, Status.EXPIRED, initialDate, deadline, category);
+                    taskRepository.save(task);
+
+                    category.getTasks().add(task);
+                    categoryRepository.save(category);
+
+                    return rowMapperTaskResponse(task, taskRequest, initialDate, deadline);
+                } else {
+                    Task task = rowMapperTask(taskRequest, Status.TO_DO, initialDate, deadline, category);
+                    taskRepository.save(task);
+
+                    category.getTasks().add(task);
+                    categoryRepository.save(category);
+
+                    return rowMapperTaskResponse(task, taskRequest, initialDate, deadline);
+                }
+            }
         }
-        throw new UserPrincipalNotFoundException("User not found");
+        throw new UserPrincipalNotFoundException("There isn't any category with this id");
     }
 
-    public TaskResponse taskDetails(Long id) throws Exception {
+    public void deleteTask(Integer id) throws Exception {
         Optional<Task> task = taskRepository.findById(id);
+        if (task.isPresent()) {
+            Task taskToDelete = task.get();
+            Category category = taskToDelete.getCategory();
+            category.getTasks().remove(taskToDelete);
+            taskRepository.deleteById(id);
+        } else {
+            throw new Exception("Essa tarefa não existe");
+        }
+    }
 
-        if(task.isPresent()){
+    public TaskResponse getTask(Integer id) throws Exception {
+        Optional<Task> task = taskRepository.findById(id);
+        if (task.isPresent()) {
             return TaskResponse.builder()
                     .id(task.get().getId())
                     .description(task.get().getDescription())
+                    .priority(task.get().getPriority())
+                    .initialDate(task.get().getInitialDate())
+                    .deadline(task.get().getDeadline())
                     .status(task.get().getStatus())
+                    .categoryId(task.get().getCategory().getId())
+                    .categoryName(task.get().getCategory().getName())
                     .build();
-        }else {
-            throw new Exception("This game doesn't exists.");
+        } else {
+            throw new Exception("Essa tarefa não existe");
         }
     }
 
-    public void deleteTask(Long id) throws Exception {
-        Optional<Task> task = taskRepository.findById(id);
-        if(task.isPresent()) {
-            taskRepository.deleteById(id);
-        }else{
-            throw new Exception("Esse game não existe");
-        }
-    }
+    public void updateTask(UpdateTaskRequest taskRequest, Principal principal) throws Exception {
+        String username = principal.getName();
 
-    public TaskResponse updateTask(Long id, TaskRequest taskRequest) throws Exception {
-        Optional<Task> optional = taskRepository.findById(id);
+        Optional<Task> optional = taskRepository.findByCategoryUserEmailAndId(username, taskRequest.getTaskId());
 
-        if(!(optional.isEmpty())){
-            taskRepository.save(Task.builder()
-                    .id(id)
-                    .description(taskRequest.getDescription())
-                    .status(optional.get().getStatus())
-                    .user(optional.get().getUser())
-                    .build());
+        if (!(optional.isEmpty())) {
 
-            return TaskResponse.builder()
-                    .id(id)
-                    .description(taskRequest.getDescription())
-                    .status(optional.get().getStatus())
-                    .build();
-        }else{
-            throw new Exception("This task doesn't exists.");
-        }
-    }
-
-    public boolean isTaskStatusDone(Long id) throws Exception{
-        Optional<Task> optional = taskRepository.findById(id);
-        if(!(optional.isEmpty())){
             Task task = optional.get();
-            if(task.getStatus().toString().equals("TO_DO") ||task.getStatus().toString() == "TO_DO" || task.getStatus() == Status.TO_DO ){
-                task.setStatus(Status.DONE);
-                taskRepository.save(task);
-                return true;
+
+            LocalDate initialDate = null;
+            LocalDate deadline = null;
+
+            if (taskRequest.getInitialDate() != null) {
+                initialDate = DateUtil.toLocalDate(taskRequest.getInitialDate(), "dd-MM-yyyy");
             }
-            if(task.getStatus().toString().equals("DONE") ||task.getStatus().toString() == "DONE" ) {
+            if (taskRequest.getDeadline() != null) {
+                deadline = DateUtil.toLocalDate(taskRequest.getDeadline(), "dd-MM-yyyy");
+            }
+
+            if (initialDate == null && deadline == null) {
+                task.setDescription(taskRequest.getDescription());
+                task.setInitialDate(initialDate);
+                task.setDeadline(deadline);
+                task.setPriority(taskRequest.getPriority());
                 task.setStatus(Status.TO_DO);
                 taskRepository.save(task);
-                return false;
+            } else if (initialDate != null && deadline != null) {
+                // verifica se a data de inicio é maior que a atual
+                if (initialDate.isAfter(LocalDate.now())) {
+                    task.setDescription(taskRequest.getDescription());
+                    task.setInitialDate(initialDate);
+                    task.setDeadline(deadline);
+                    task.setPriority(taskRequest.getPriority());
+                    task.setStatus(Status.NOT_STARTED);
+                    taskRepository.save(task);
+                } else {
+                    // verifica se a data final é maior ou igual a data atual, se não for, quer dizer que ja passou
+                    if (deadline.isAfter(LocalDate.now()) || deadline.isEqual(LocalDate.now())) {
+                        task.setDescription(taskRequest.getDescription());
+                        task.setInitialDate(initialDate);
+                        task.setDeadline(deadline);
+                        task.setPriority(taskRequest.getPriority());
+                        task.setStatus(Status.TO_DO);
+                        taskRepository.save(task);
+                    } else {
+                        task.setDescription(taskRequest.getDescription());
+                        task.setInitialDate(initialDate);
+                        task.setDeadline(deadline);
+                        task.setPriority(taskRequest.getPriority());
+                        task.setStatus(Status.EXPIRED);
+                        taskRepository.save(task);
+                    }
+                }
             }
-            return false;
+
+            if (initialDate != null && deadline == null) {
+                if (initialDate.isAfter(LocalDate.now())) {
+                    task.setDescription(taskRequest.getDescription());
+                    task.setInitialDate(initialDate);
+                    task.setDeadline(deadline);
+                    task.setPriority(taskRequest.getPriority());
+                    task.setStatus(Status.NOT_STARTED);
+                    taskRepository.save(task);
+                } else {
+                    task.setDescription(taskRequest.getDescription());
+                    task.setInitialDate(initialDate);
+                    task.setDeadline(deadline);
+                    task.setPriority(taskRequest.getPriority());
+                    task.setStatus(Status.TO_DO);
+                    taskRepository.save(task);
+                }
+            }
+
+            if (initialDate == null && deadline != null) {
+                if (deadline.isBefore(LocalDate.now())) {
+                    task.setDescription(taskRequest.getDescription());
+                    task.setInitialDate(initialDate);
+                    task.setDeadline(deadline);
+                    task.setPriority(taskRequest.getPriority());
+                    task.setStatus(Status.EXPIRED);
+                    taskRepository.save(task);
+                } else {
+                    task.setDescription(taskRequest.getDescription());
+                    task.setInitialDate(initialDate);
+                    task.setDeadline(deadline);
+                    task.setPriority(taskRequest.getPriority());
+                    task.setStatus(Status.TO_DO);
+                    taskRepository.save(task);
+                }
+            }
         } else {
             throw new Exception("This task doesn't exists.");
         }
     }
 
-    public ProgressResponse getProgress(Principal principal) {
-
+    public void changeTaskStatus(Integer id, Principal principal) throws Exception {
         String username = principal.getName();
+        Optional<User> optionalUser = userRepository.findByEmail(username);
+        Optional<Task> optional = taskRepository.findById(id);
 
-        List<Task> allTasks = this.taskRepository.findByUserEmail(username);
-
-        List<Task> doneTasks = new ArrayList<Task>();
-
-        allTasks.stream().forEach(task -> {
-            if(task.getStatus().getName() == "DONE"){
-                doneTasks.add(Task.builder()
-                        .id(task.getId())
-                        .description(task.getDescription())
-                        .status(task.getStatus())
-                        .build());
+        if (!optionalUser.isEmpty()) {
+            User user = optionalUser.get();
+            if (!(optional.isEmpty())) {
+                Task task = optional.get();
+                if (task.getStatus().equals(Status.TO_DO)) {
+                    changeTaskStatus(task, Status.DONE, ConclusionStatus.WITHIN_TIME);
+                    saveActivity(task, user);
+                } else if (task.getStatus().equals(Status.NOT_STARTED)) {
+                    changeTaskStatus(task, Status.DONE, ConclusionStatus.BEFORE_START_TIME);
+                    saveActivity(task, user);
+                } else if (task.getStatus().equals(Status.EXPIRED)) {
+                    changeTaskStatus(task, Status.DONE, ConclusionStatus.OUT_OF_TIME);
+                    saveActivity(task, user);
+                } else if (task.getStatus().equals(Status.DONE)) {
+                    if (task.getConclusionStatus().equals(ConclusionStatus.WITHIN_TIME)) {
+                        changeTaskStatus(task, Status.TO_DO, null);
+                        deleteActivity(task);
+                    } else if (task.getConclusionStatus().equals(ConclusionStatus.BEFORE_START_TIME)) {
+                        changeTaskStatus(task, Status.NOT_STARTED, null);
+                        deleteActivity(task);
+                    } else if (task.getConclusionStatus().equals(ConclusionStatus.OUT_OF_TIME)) {
+                        changeTaskStatus(task, Status.EXPIRED, null);
+                        deleteActivity(task);
+                    }
+                }
+            } else {
+                throw new Exception("This task doesn't exists.");
             }
-        });
-        System.out.println(allTasks.size());
-        System.out.println(doneTasks.size());
-
-        Double done = Double.valueOf(doneTasks.size());
-        Double all = Double.valueOf(allTasks.size());
-        Double percent = Double.valueOf(100);
-        double progress = ((done / all) * percent);
-
-        return ProgressResponse.builder()
-                .progress(progress).build();
+        } else{
+            throw new Exception("This user doesn't exists.");
+        }
 
     }
+
+    private void changeTaskStatus(Task task, Status status, ConclusionStatus conclusionStatus){
+        task.setStatus(status);
+        task.setConclusionStatus(conclusionStatus);
+        taskRepository.save(task);
+    }
+
+    private void saveActivity(Task task, User user){
+        activityRepository.save(Activity.builder()
+                .conclusionDate(LocalDate.now())
+                .taskId(task.getId())
+                .taskDescription(task.getDescription())
+                .categoryName(task.getCategory().getName())
+                .user(user)
+                .build());
+    }
+    private void deleteActivity(Task task){
+        Activity activity = activityRepository.findByTaskId(task.getId());
+        activityRepository.delete(activity);
+    }
+
+
+    private TaskResponse rowMapperTaskResponse(Task task, TaskRequest taskRequest, LocalDate initialDate, LocalDate deadline) {
+        return TaskResponse.builder()
+                .id(task.getId())
+                .description(taskRequest.getDescription())
+                .initialDate(initialDate)
+                .deadline(deadline)
+                .priority(taskRequest.getPriority())
+                .status(Status.TO_DO)
+                .categoryId(task.getCategory().getId())
+                .build();
+    }
+
+    private Task rowMapperTask(TaskRequest taskRequest, Status status, LocalDate initialDate, LocalDate deadline, Category category) {
+        return Task.builder()
+                .description(taskRequest.getDescription())
+                .status(status)
+                .initialDate(initialDate)
+                .deadline(deadline)
+                .category(category)
+                .priority(taskRequest.getPriority())
+                .build();
+    }
+
 }

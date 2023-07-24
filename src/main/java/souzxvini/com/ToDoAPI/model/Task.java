@@ -1,5 +1,6 @@
 package souzxvini.com.ToDoAPI.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -18,14 +19,26 @@ public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     private String description;
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
+    @Enumerated(EnumType.STRING)
+    private ConclusionStatus conclusionStatus;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    private LocalDate initialDate;
+
+    private LocalDate deadline;
+
+    private String priority;
+
+
 
 }

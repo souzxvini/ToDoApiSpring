@@ -1,24 +1,17 @@
 package souzxvini.com.ToDoAPI.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+import javax.validation.constraints.NotBlank;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class UserResponse {
+public class CategoryRequest {
 
-    private Integer id;
-
-    private String email;
-
-    private String password;
-
+    @NotBlank
     private String name;
 
 }

@@ -3,12 +3,16 @@ package souzxvini.com.ToDoAPI.controller;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import souzxvini.com.ToDoAPI.dto.ProgressResponse;
 import souzxvini.com.ToDoAPI.dto.TaskRequest;
 import souzxvini.com.ToDoAPI.dto.TaskResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import souzxvini.com.ToDoAPI.dto.TasksFilterRequest;
+import souzxvini.com.ToDoAPI.dto.UpdateTaskRequest;
 import souzxvini.com.ToDoAPI.service.TaskService;
 
 import javax.validation.Valid;
@@ -17,56 +21,43 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/task")
-@CrossOrigin(origins = "https://todoappsouzxvini.web.app")
+@CrossOrigin(origins = "http://localhost:4200")
 public class TaskController {
 
     @Autowired
     private TaskService taskservice;
 
-   @GetMapping
-   public List<TaskResponse> showTasks(Principal principal){
-       return taskservice.showTasks(principal);
-   }
-
-    @GetMapping(value = "/todo")
-    public List<TaskResponse> showToDoTasks(@PageableDefault(sort = "id", direction = Sort.Direction.DESC, size = Integer.MAX_VALUE) Pageable pageable,
-                                            Principal principal){
-        return taskservice.showToDoTasks(principal, pageable);
-    }
-
-    @GetMapping(value = "/done")
-    public List<TaskResponse> showDoneTasks(@PageableDefault(sort = "id",direction = Sort.Direction.DESC,size = Integer.MAX_VALUE) Pageable pageable,
-                                            Principal principal){
-        return taskservice.showDoneTasks(principal, pageable);
-    }
-
    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public TaskResponse addTask(@RequestBody @Valid TaskRequest taskRequest, Principal principal) throws Exception{
-       return taskservice.addTask(taskRequest, principal);
+    public ResponseEntity addTask(@RequestBody @Valid TaskRequest taskRequest, Principal principal) throws Exception{
+
+       taskservice.addTask(taskRequest, principal);
+
+       return new ResponseEntity(HttpStatus.OK);
    }
 
    @DeleteMapping(value="/{id}")
-   public void deleteTask(@PathVariable Long id) throws Exception {
+   public ResponseEntity deleteTask(@PathVariable Integer id) throws Exception {
        taskservice.deleteTask(id);
-   }
 
-   @GetMapping(value = "/{id}")
-    public TaskResponse taskDetails(@PathVariable Long id) throws Exception {
-       return taskservice.taskDetails(id);
+       return new ResponseEntity(HttpStatus.OK);
    }
-
-   @PutMapping(value = "/{id}")
-    public TaskResponse updateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest) throws Exception {
-       return taskservice.updateTask(id, taskRequest);
-   }
-
-    @GetMapping(value = "isTaskStatusDone/{id}")
-    public boolean isTaskStatusDone(@PathVariable Long id) throws Exception {
-        return taskservice.isTaskStatusDone(id);
+    @GetMapping(value="/{id}")
+    public TaskResponse getTask(@PathVariable Integer id) throws Exception {
+        return taskservice.getTask(id);
     }
 
-    @GetMapping(value = "getProgress")
-    public ProgressResponse getProgress(Principal principal) throws Exception {
-        return taskservice.getProgress(principal);
+   @PutMapping
+    public ResponseEntity updateTask(@RequestBody UpdateTaskRequest taskRequest, Principal principal) throws Exception {
+       taskservice.updateTask(taskRequest, principal);
+
+       return new ResponseEntity(HttpStatus.OK);
+   }
+
+    @PutMapping(value = "changeTaskStatus/{id}")
+    public ResponseEntity changeTaskStatus(@PathVariable Integer id, Principal principal) throws Exception {
+       taskservice.changeTaskStatus(id, principal);
+
+       return new ResponseEntity(HttpStatus.OK);
     }
+
 }

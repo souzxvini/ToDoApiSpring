@@ -1,22 +1,20 @@
 package souzxvini.com.ToDoAPI.service;
 
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.RequestParam;
-import souzxvini.com.ToDoAPI.dto.*;
-import souzxvini.com.ToDoAPI.model.EmailMessages;
-import souzxvini.com.ToDoAPI.model.Task;
-import souzxvini.com.ToDoAPI.model.User;
 import org.springframework.stereotype.Service;
+import souzxvini.com.ToDoAPI.dto.ChangeForgotPasswordRequest;
+import souzxvini.com.ToDoAPI.dto.LanguageRequest;
+import souzxvini.com.ToDoAPI.dto.ThemeRequest;
+import souzxvini.com.ToDoAPI.dto.UserChangeDataRequest;
+import souzxvini.com.ToDoAPI.dto.UserChangePasswordRequest;
+import souzxvini.com.ToDoAPI.dto.UserRequest;
+import souzxvini.com.ToDoAPI.dto.UserResponse;
+import souzxvini.com.ToDoAPI.model.User;
 import souzxvini.com.ToDoAPI.repository.UserRepository;
 
 import java.security.Principal;
-import java.util.List;
 import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,17 +33,17 @@ public class UserService {
 
         Optional<User> userMayExists = userRepository.findByEmail(userRequest.getEmail());
 
-        if(userMayExists.isPresent() || !userMayExists.isEmpty()) {
+        if (userMayExists.isPresent() || !userMayExists.isEmpty()) {
             throw new Exception("Usuário ja existente!");
         } else {
-            if(userRequest.getPassword().equals(userRequest.getConfirmPassword())){
+            if (userRequest.getPassword().equals(userRequest.getConfirmPassword())) {
                 String regex_pattern =
                         "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{6,24}$";
 
                 Pattern pattern = Pattern.compile(regex_pattern);
                 Matcher matcher = pattern.matcher(userRequest.getPassword());
 
-                if(matcher.matches()){
+                if (matcher.matches()) {
                     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
                     String unencryptedPassword = userRequest.getPassword();
                     String encodedPassword = encoder.encode(unencryptedPassword);
@@ -53,20 +51,22 @@ public class UserService {
                             .email(userRequest.getEmail())
                             .password(encodedPassword)
                             .name(userRequest.getName())
+                            .language("pt")
+                                    .theme("LIGHT")
                             .build());
-                } else{
+                } else {
                     throw new Exception("Password does NOT have all the requirements");
                 }
-            }else{
+            } else {
                 throw new Exception("Passwords do NOT matches");
             }
         }
     }
 
-    public UserResponse getUserDetails(Long id) throws Exception {
+    public UserResponse getUserDetails(Integer id) throws Exception {
         Optional<User> optional = userRepository.findById(id);
 
-        if(!(optional.isEmpty())){
+        if (!(optional.isEmpty())) {
             return UserResponse.builder()
                     .id(id)
                     .email(optional.get().getEmail())
@@ -76,10 +76,11 @@ public class UserService {
         }
         throw new Exception("User not found.");
     }
+
     public UserResponse updateUserData(String email, UserChangeDataRequest userChangeDataRequest) throws Exception {
         Optional<User> optional = userRepository.findByEmail(email);
 
-        if(!(optional.isEmpty())){
+        if (!(optional.isEmpty())) {
 
             User user = User.builder()
                     .id(optional.get().getId())
@@ -89,9 +90,9 @@ public class UserService {
                     .roles(optional.get().getRoles())
                     .build();
 
-            if(user.getRoles().isEmpty()){
+            if (user.getRoles().isEmpty()) {
                 throw new Exception("You don't have access to do this.");
-            } else{
+            } else {
                 user.getRoles().removeAll(user.getRoles());
             }
             userRepository.save(user);
@@ -101,14 +102,15 @@ public class UserService {
                     .email(userChangeDataRequest.getEmail())
                     .name(userChangeDataRequest.getName())
                     .build();
-        }else{
+        } else {
             throw new Exception("This user doesn't exists.");
         }
     }
+
     public ResponseEntity updateUserPassword(String email, UserChangePasswordRequest userChangePasswordRequest) throws Exception {
         Optional<User> optional = userRepository.findByEmail(email);
 
-        if(!(optional.isEmpty())){
+        if (!(optional.isEmpty())) {
             User user = optional.get();
 
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -117,42 +119,41 @@ public class UserService {
 
             user.setPassword(encodedPassword);
 
-            if(!userChangePasswordRequest.getPassword().isEmpty()){
-                if(userChangePasswordRequest.getPassword().equals(userChangePasswordRequest.getConfirmPassword())){
+            if (!userChangePasswordRequest.getPassword().isEmpty()) {
+                if (userChangePasswordRequest.getPassword().equals(userChangePasswordRequest.getConfirmPassword())) {
                     String regex_pattern =
                             "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{6,24}$";
 
                     Pattern pattern = Pattern.compile(regex_pattern);
                     Matcher matcher = pattern.matcher(userChangePasswordRequest.getPassword());
-                    if(matcher.matches()){
-                        if(user.getRoles().isEmpty()){
+                    if (matcher.matches()) {
+                        if (user.getRoles().isEmpty()) {
                             throw new Exception("You don't have access to do this.");
-                        } else{
+                        } else {
                             user.getRoles().removeAll(user.getRoles());
                         }
                         userRepository.save(user);
 
                         return ResponseEntity.ok().build();
-                    }else{
+                    } else {
                         throw new Exception("Password does NOT have all the requirements");
                     }
 
-                }else{
+                } else {
                     throw new Exception("The passwords doesn't matches.");
                 }
-            }
-            else{
+            } else {
                 throw new Exception("The password can't be null");
             }
-        }else{
+        } else {
             throw new Exception("This user doesn't exists.");
         }
     }
 
-    public ResponseEntity updateForgotPassword( ChangeForgotPasswordRequest changeForgotPasswordRequest) throws Exception {
+    public ResponseEntity updateForgotPassword(ChangeForgotPasswordRequest changeForgotPasswordRequest) throws Exception {
         Optional<User> optional = userRepository.findByEmail(changeForgotPasswordRequest.getEmail());
 
-        if(!(optional.isEmpty())){
+        if (!(optional.isEmpty())) {
             User user = optional.get();
 
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -160,8 +161,8 @@ public class UserService {
             String encodedPassword = encoder.encode(unencryptedPassword);
             user.setPassword(encodedPassword);
 
-            if(!changeForgotPasswordRequest.getPassword().isEmpty()){
-                if(changeForgotPasswordRequest.getPassword().equals(changeForgotPasswordRequest.getConfirmPassword())){
+            if (!changeForgotPasswordRequest.getPassword().isEmpty()) {
+                if (changeForgotPasswordRequest.getPassword().equals(changeForgotPasswordRequest.getConfirmPassword())) {
 
                     String regex_pattern =
                             "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{6,24}$";
@@ -169,28 +170,28 @@ public class UserService {
                     Pattern pattern = Pattern.compile(regex_pattern);
                     Matcher matcher = pattern.matcher(changeForgotPasswordRequest.getPassword());
 
-                    if(matcher.matches()){
-                        if(changeForgotPasswordRequest.getRandomCode().equals(user.getRandomCode()) || changeForgotPasswordRequest.getRandomCode() == user.getRandomCode()){
+                    if (matcher.matches()) {
+                        if (changeForgotPasswordRequest.getRandomCode().equals(user.getRandomCode()) || changeForgotPasswordRequest.getRandomCode() == user.getRandomCode()) {
                             user.setRandomCode(null);
                             userRepository.save(user);
 
                             return ResponseEntity.ok().build();
-                        } else{
+                        } else {
                             throw new Exception("Wrong code!");
                         }
-                    } else{
+                    } else {
                         throw new Exception("Password does NOT have all the requirements");
                     }
 
-                } else{
+                } else {
                     throw new Exception("Passwords do NOT matches.");
                 }
 
-            }else{
+            } else {
                 throw new Exception("The code can't be empty!");
             }
 
-        }else{
+        } else {
             throw new Exception("This user doesn't exists.");
         }
     }
@@ -199,26 +200,27 @@ public class UserService {
 
         Optional<User> optional = userRepository.findByEmail(email);
 
-        if(!(optional.isEmpty())){
+        if (!(optional.isEmpty())) {
             User user = optional.get();
-            if(!(user.getRandomCode() == null)){
+            if (!(user.getRandomCode() == null)) {
                 user.setRandomCode(null);
             }
 
-            if(!user.getRoles().isEmpty()){
+            if (!user.getRoles().isEmpty()) {
                 user.getRoles().removeAll(user.getRoles());
             }
             userRepository.save(user);
-        }else{
+        } else {
             throw new Exception("This user doesn't exists.");
         }
 
         return ResponseEntity.ok().build();
     }
-    public boolean verifyIfUserExists(String nome){
+
+    public boolean verifyIfUserExists(String nome) {
         Optional<User> optional = userRepository.findByEmail(nome);
 
-        if(optional.isEmpty() ){
+        if (optional.isEmpty()) {
             return false;
         } else {
             return true;
@@ -228,19 +230,45 @@ public class UserService {
     public boolean userHasAuthorities(String email) throws Exception {
         Optional<User> optional = userRepository.findByEmail(email);
 
-        if(optional.isEmpty()){
+        if (optional.isEmpty()) {
             throw new Exception("User doesn't exists.");
         } else {
             User user = optional.get();
 
-            if(user.getAuthorities().isEmpty()){
+            if (user.getAuthorities().isEmpty()) {
                 return false;
-            } else{
+            } else {
                 return true;
             }
         }
     }
 
+    public void changeUserLanguage(LanguageRequest languageRequest, Principal principal) throws Exception {
 
+        String userEmail = principal.getName();
 
+        Optional<User> optional = userRepository.findByEmail(userEmail);
+
+        if (optional.isEmpty()) {
+            throw new Exception("User doesn't exists.");
+        }
+
+        User user = optional.get();
+        user.setLanguage(languageRequest.getLanguage());
+        userRepository.save(user);
+    }
+
+    public void changeUserTheme(ThemeRequest themeRequest, Principal principal) throws Exception {
+        String userEmail = principal.getName();
+
+        Optional<User> optional = userRepository.findByEmail(userEmail);
+
+        if (optional.isEmpty()) {
+            throw new Exception("User doesn't exists.");
+        }
+
+        User user = optional.get();
+        user.setTheme(themeRequest.getTheme());
+        userRepository.save(user);
+    }
 }

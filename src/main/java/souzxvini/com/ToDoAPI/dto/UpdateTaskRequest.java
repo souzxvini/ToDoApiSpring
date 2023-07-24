@@ -1,24 +1,22 @@
 package souzxvini.com.ToDoAPI.dto;
 
-import lombok.*;
-import souzxvini.com.ToDoAPI.model.Priority;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskRequest {
+public class UpdateTaskRequest {
+
+    @NotNull
+    private Integer taskId;
 
     @NotBlank
     private String description;
-
-    @NotNull
-    private Integer categoryId;
 
     private String initialDate;
 

@@ -54,7 +54,7 @@ public class AuthService {
 
             final String token = jwtUtil.gerarToken(authentication);
 
-            return new JwtResponse(token, form.getEmail(), user.getName());
+            return new JwtResponse(token, form.getEmail(), user.getName(), user.getLanguage(), user.getTheme());
         }else{
             throw new Exception("User doesn't exists");
         }

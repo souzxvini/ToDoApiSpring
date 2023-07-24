@@ -8,9 +8,11 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import souzxvini.com.ToDoAPI.service.UserService;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping(value = "/user")
-@CrossOrigin(origins = "https://todoappsouzxvini.web.app")
+@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
 
     @Autowired
@@ -25,7 +27,7 @@ public class UserController {
    }
 
    @GetMapping(value = "/{id}")
-    public UserResponse getUserDetails(@PathVariable Long id) throws Exception {
+    public UserResponse getUserDetails(@PathVariable Integer id) throws Exception {
         return userService.getUserDetails(id);
    }
 
@@ -57,6 +59,18 @@ public class UserController {
     @GetMapping(value = "/userHasAuthorities", produces = MediaType.APPLICATION_JSON_VALUE )
     public boolean userHasAuthorities(@RequestParam String email) throws Exception {
         return userService.userHasAuthorities(email);
+    }
+
+    @PutMapping(value = "/language", produces = MediaType.APPLICATION_JSON_VALUE )
+    public ResponseEntity changeUserLanguage(@RequestBody LanguageRequest languageRequest, Principal principal) throws Exception {
+        userService.changeUserLanguage(languageRequest, principal);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/theme", produces = MediaType.APPLICATION_JSON_VALUE )
+    public ResponseEntity changeUserTheme(@RequestBody ThemeRequest themeRequest, Principal principal) throws Exception {
+        userService.changeUserTheme(themeRequest, principal);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

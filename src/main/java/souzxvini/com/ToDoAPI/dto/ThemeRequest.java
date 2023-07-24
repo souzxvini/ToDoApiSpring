@@ -5,20 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+import javax.validation.constraints.NotBlank;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserResponse {
+public class ThemeRequest {
 
-    private Integer id;
-
-    private String email;
-
-    private String password;
-
-    private String name;
+    @NotBlank
+    private String theme;
 
 }

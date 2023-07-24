@@ -5,20 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserResponse {
+public class ActivityResponse {
 
-    private Integer id;
-
-    private String email;
-
-    private String password;
-
-    private String name;
+    private LocalDate conclusionDate;
+    private String taskDescription;
+    private String categoryName;
 
 }
